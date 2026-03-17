@@ -1,0 +1,17 @@
+[project]
+name = "roads-synchronizer"
+version = "0.1.0"
+description = "Reads tables from a database and pushes them to RabbitMQ"
+requires-python = ">=3.12"
+dependencies = [
+    "sqlalchemy",
+    "psycopg2-binary",
+    "pika",
+    "loguru>=0.7.3",
+    "django-environ>=0.13.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.6",
+]
