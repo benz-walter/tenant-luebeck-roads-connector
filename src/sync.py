@@ -11,9 +11,9 @@ import pika
 from loguru import logger
 from pika import BlockingConnection, ConnectionParameters
 from pika.adapters.blocking_connection import BlockingChannel
-from sqlalchemy import create_engine, inspect, Table, MetaData
+from sqlalchemy import MetaData, Table, create_engine, inspect
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import OperationalError, NoSuchTableError
+from sqlalchemy.exc import NoSuchTableError, OperationalError
 
 env = environ.Env(
     DEBUG=(bool, False),
@@ -92,7 +92,7 @@ class DatabaseConnector:
             exit(1)
 
     def _engine(self) -> Engine:
-        return create_engine(self._url)
+        return create_engine(self._url, plugins=["geoalchemy2"])
 
     def sync(self) -> None:
         """
@@ -108,61 +108,62 @@ class DatabaseConnector:
             engine = self._engine()
             inspector = inspect(engine)
         except OperationalError as error:
-            raise RoadsError(f"Could not connect to the database: {error}", error=error)
+            raise RoadsError(
+                f"Could not connect to the database: {error}", error=error
+            ) from error
 
-        with engine.connect() as connection:
-            with RabbitMQConnector() as connector:
-                for table_name in self._tables:
-                    if STOP_EXECUTION:
-                        logger.info("Interrupt detected. Skipping remaining tables.")
-                        break
+        with engine.connect() as connection, RabbitMQConnector() as connector:
+            for table_name in self._tables:
+                if STOP_EXECUTION:
+                    logger.info("Interrupt detected. Skipping remaining tables.")
+                    break
 
-                    logger.debug("{table}: Lookup...", table=table_name)
+                logger.debug("{table}: Lookup...", table=table_name)
 
-                    try:
-                        columns_info = inspector.get_columns(table_name)
-                    except NoSuchTableError as error:
-                        raise RoadsError(
-                            f"Table '{table_name}' does not exist or is not readable",
-                            error=error,
-                        )
+                try:
+                    columns_info = inspector.get_columns(table_name)
+                except NoSuchTableError as error:
+                    raise RoadsError(
+                        f"Table '{table_name}' does not exist or is not readable",
+                        error=error,
+                    ) from error
 
-                    # Map columns to their types
-                    schema_columns = {
-                        col["name"]: str(col["type"]).lower() for col in columns_info
+                # Map columns to their types
+                schema_columns = {
+                    col["name"]: str(col["type"]).lower() for col in columns_info
+                }
+                logger.debug(
+                    "{table}: Received schema ({columns} columns)",
+                    table=table_name,
+                    columns=len(schema_columns),
+                )
+
+                metadata = MetaData()
+                table = Table(table_name, metadata, autoload_with=engine)
+                query = table.select()
+                result = connection.execute(query)
+
+                # Fetch rows and convert them to dictionaries
+                # SQLAlchemy already converts database types to Python types.
+                # Since the goal is JSON, we can handle non-JSON types (like datetime)
+                # using a default=str during json.dumps later on.
+                rows = [dict(row) for row in result.mappings()]
+                logger.debug(
+                    "{table}: Received data ({rows} rows)",
+                    table=table_name,
+                    rows=len(rows),
+                )
+
+                connector.publish(
+                    {
+                        "schema": {
+                            "table": table_name,
+                            "columns": schema_columns,
+                        },
+                        "data": rows,
                     }
-                    logger.debug(
-                        "{table}: Received schema ({columns} columns)",
-                        table=table_name,
-                        columns=len(schema_columns),
-                    )
-
-                    metadata = MetaData()
-                    table = Table(table_name, metadata, autoload_with=engine)
-                    query = table.select()
-                    result = connection.execute(query)
-
-                    # Fetch rows and convert them to dictionaries
-                    # SQLAlchemy already converts database types to Python types.
-                    # Since the goal is JSON, we can handle non-JSON types (like datetime)
-                    # using a default=str during json.dumps later on.
-                    rows = [dict(row) for row in result.mappings()]
-                    logger.debug(
-                        "{table}: Received data ({rows} rows)",
-                        table=table_name,
-                        rows=len(rows),
-                    )
-
-                    connector.publish(
-                        {
-                            "schema": {
-                                "table": table_name,
-                                "columns": schema_columns,
-                            },
-                            "data": rows,
-                        }
-                    )
-                    logger.debug("{table}: Published table", table=table_name)
+                )
+                logger.debug("{table}: Published table", table=table_name)
 
 
 class RabbitMQConnector:
@@ -178,7 +179,7 @@ class RabbitMQConnector:
         if not self._connection:
             raise RuntimeError(
                 "Need to first connect to RabbitMQ prior to accessing the connection"
-            )
+            ) from None
 
         return self._connection
 
@@ -202,7 +203,7 @@ class RabbitMQConnector:
             raise RoadsError(
                 f"Could not connect to RabbitMQ {self._host}:{self._port}: {error}",
                 error=error,
-            )
+            ) from error
 
         self._channel = self._connection.channel()
         self._channel.queue_declare(queue=self._queue_name, durable=True)

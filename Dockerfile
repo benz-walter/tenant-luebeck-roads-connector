@@ -17,11 +17,22 @@ ENV PYTHONPATH=/app/src \
     UV_PYTHON_PREFERENCE=system \
     UV_PROJECT_ENVIRONMENT=/usr/local \
     # Compile bytecode to speed up imports and application startup time
-    UV_COMPILE_BYTECODE=1
+    UV_COMPILE_BYTECODE=1 \
+    # Auto-accept the EULA for installing MS SQL Server tools
+    ACCEPT_EULA=Y
+
+RUN apt update && apt install -y --no-install-recommends curl
+
+# Download the package to configure the Microsoft repo
+RUN curl -sSL -O https://packages.microsoft.com/config/debian/$(grep VERSION_ID /etc/os-release | cut -d '"' -f 2)/packages-microsoft-prod.deb \
+  && dpkg -i packages-microsoft-prod.deb \
+  && rm packages-microsoft-prod.deb
 
 RUN apt update && apt install -y --no-install-recommends \
+    # PostgreSQL
     libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+    # MSSQL
+    msodbcsql18 unixodbc
 
 # Target used in production deployments
 FROM base AS production
