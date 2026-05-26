@@ -1,0 +1,64 @@
+name: helm-chart.yml
+on: [push]
+
+permissions:
+  contents: write  # Required to create releases
+  packages: write  # Required if publishing to GitHub Packages
+
+jobs:
+  lint-and-validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        kubeVersion: [
+          '1.21.0', # minimum version we support as defined in Chart.yaml
+          '1.33.0',
+        ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup any prerequisites
+        uses: ./.github/composites/helm-chart-prerequisites
+
+      - name: Lint Helm chart against Kubernetes ${{ matrix.kubeVersion }}
+        run: helm lint --kube-version ${{ matrix.kubeVersion }} -f ./chart/values.lint.yaml ./chart
+
+      - name: Install chart dependencies
+        run: helm dependency build
+      - name: Render Helm templates
+        run: helm template -f ./chart/values.lint.yaml ./chart > /tmp/rendered-template.yaml
+
+      - name: Install kubeconform
+        run: curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar -xz -C /usr/local/bin
+      - name: Validate rendered templates with kubeconform against Kubernetes ${{ matrix.kubeVersion }}
+        run: kubeconform -kubernetes-version ${{ matrix.kubeVersion }} -strict -summary /tmp/rendered-template.yaml
+
+  package:
+    runs-on: ubuntu-latest
+    needs: lint-and-validate
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup any prerequisites
+        uses: ./.github/composites/helm-chart-prerequisites
+
+      - name: Install chart dependencies
+        run: helm dependency build
+      - name: Package Helm chart
+        run: helm package --destination ./dist --app-version ${{ github.ref_name }} --version ${{ github.ref_name }} ./chart
+
+      - name: Upload packaged chart as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged-helm-chart
+          path: ./dist/*.tgz
+          if-no-files-found: error
+
+      - name: Release
+        uses: softprops/action-gh-release@v3
+        if: github.ref_type == 'tag'
+        with:
+          files: |
+            ./dist/*.tgz
