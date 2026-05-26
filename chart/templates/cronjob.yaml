@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: roads-connector
+spec:
+  schedule: {{ .Values.cronjob.schedule | quote }}
+  startingDeadlineSeconds: {{ .Values.cronjob.startingDeadlineSeconds }}
+  successfulJobsHistoryLimit: {{ .Values.cronjob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cronjob.failedJobsHistoryLimit }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          {{- with .Values.application.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- with .Values.application.podSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          containers:
+            - name: roads-connector
+              {{- with .Values.application.containerSecurityContext }}
+              securityContext:
+                {{- toYaml . | nindent 12 }}
+              {{- end }}
+              image: "{{ .Values.application.imageName }}:{{ .Values.application.imageTag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.application.pullPolicy }}
+              envFrom:
+                - configMapRef:
+                    name: roads-connector
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: roads-connector
+                      key: databaseUrl
+              {{- with .Values.application.resources }}
+              resources:
+                {{- toYaml . | nindent 12 }}
+              {{- end }}

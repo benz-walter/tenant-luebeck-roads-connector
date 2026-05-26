@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": [
+    "application",
+    "broker",
+    "cronjob",
+    "database"
+  ],
+  "properties": {
+    "cronjob" : {
+      "type": "object",
+      "properties": {
+        "schedule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startingDeadlineSeconds": {
+          "type": [
+            "integer", "null"
+          ]
+        },
+        "successfulJobsHistoryLimit": {
+          "type": "integer"
+        },
+        "failedJobsHistoryLimit": {
+          "type": "integer"
+        }
+      }
+    },
+    "application": {
+      "type": "object",
+      "properties": {
+        "imagePullSecrets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "imageName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "imageTag": {
+          "type": "string"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": ["Always", "IfNotPresent", "Never"]
+        },
+        "containerSecurityContext": {
+          "type": "object"
+        },
+        "podSecurityContext": {
+          "type": "object"
+        },
+        "resources": {
+          "type": "object"
+        },
+        "debug": {
+          "type": "boolean"
+        },
+        "logLevel": {
+          "type": "string",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR", ""]
+        }
+      }
+    },
+    "broker": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "queueName": {
+          "type": "string"
+        }
+      }
+    },
+    "database": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

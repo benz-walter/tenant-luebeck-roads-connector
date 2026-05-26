@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: roads-connector
+data:
+  DEBUG: {{ .Values.application.debug | quote }}
+  LOG_LEVEL: {{ .Values.application.logLevel | quote }}
+
+  BROKER_HOST: {{ .Values.broker.host | quote }}
+  BROKER_PORT: {{ .Values.broker.port | quote }}
+  BROKER_QUEUE_NAME: {{ .Values.broker.queueName | quote }}
+
+  SYNC_TABLES: {{ .Values.syncTables | join "," | quote }}

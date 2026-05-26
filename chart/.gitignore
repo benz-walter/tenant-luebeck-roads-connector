@@ -1,0 +1,6 @@
+.idea/
+.vscode/
+
+charts/*
+dist/
+values.custom.yaml

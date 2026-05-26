@@ -1,0 +1,6 @@
+broker:
+  host: "localhost"
+
+database:
+  url: "postgres://user:password@host:port/database"
+  tables: ["table1", "table2"]

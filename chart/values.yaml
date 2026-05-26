@@ -1,0 +1,84 @@
+# Default values for this Helm Chart.
+# To override certain values, create another file and specify it using `-f values.custom.yaml` whenever calling helm, e.g.
+#   helm install <chart> -n my-namespace --name roads-connector -f values.custom.yaml
+
+# Configuration related to the cronjob.
+cronjob:
+
+  # Specifies the schedule how the application should be run. Follows the Cron syntax.
+  # See: https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#schedule-syntax
+  schedule: "@hourly"
+
+  # Defines a deadline (in whole seconds) for starting the Job, if that Job misses its scheduled time for any reason.
+  # Can be set to null to disable.
+  startingDeadlineSeconds: null
+
+  # Specifies the number of successful finished jobs to keep. Setting this field to 0 will not keep any successful jobs.
+  successfulJobsHistoryLimit: 1
+
+  # Specifies the number of failed finished jobs to keep. Setting this field to 0 will not keep any failed jobs.
+  failedJobsHistoryLimit: 1
+
+# Configuration related to the application.
+application:
+
+  # Custom secrets to pull images from external repositories.
+  # See: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  imagePullSecrets: []
+
+  # Image registry and name to use
+  imageName: ghcr.io/benz-walter/tenant-luebeck-roads-connector/roads-connector
+
+  # Image tag to use, defaults to Chart.AppVersion
+  imageTag: ""
+
+  # Defines the pull policy of the image.
+  # Can be 'Never', 'IfNotPresent' and 'Always'
+  pullPolicy: Always
+
+  # Optional the securityContext of the containers.
+  # See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  containerSecurityContext: {}
+
+  # Optional the securityContext of the pod.
+  # See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  podSecurityContext: {}
+
+  # Defines which resources to reserve and if they are limited
+  # By default, no resources are reversed nor limited.
+  # See: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources: {}
+
+  # Enable or disable debugging.
+  # Attention: Never enable this in a production environment, as it can leak confidential information.
+  debug: false
+
+  # Changes the log level of the application.
+  # If set to an empty string, it defaults to "INFO" in case .Values.application.debug is false, otherwise "DEBUG".
+  # Can be set to: "DEBUG", "INFO", "WARNING", "ERROR".
+  logLevel: ""
+
+# Configuration related to the AMQP broker.
+broker:
+
+  # Host of the broker to connect to.
+  host: ""
+
+  # AMQP port of the broker
+  port: 5672
+
+  # Name of the queue to publish messages to.
+  queueName: "roads"
+
+# Configuration related to the database.
+database:
+
+  # Connection string for the database, including protocol, credentials, database and schema.
+  # E.g.:
+  #   postgres://user:password@host:port/database?sslmode=disable
+  #   mssql+pyodbc://user:password@host:port/database?schema=schema&driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=no
+  # For more information see: https://docs.sqlalchemy.org/en/20/tutorial/engine.html
+  url: ""
+
+  # List of tables to sync.
+  tables: []
