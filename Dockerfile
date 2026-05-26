@@ -9,8 +9,8 @@ FROM ${IMAGE_UV} AS uv
 FROM ${IMAGE_PYTHON} AS base
 COPY --from=uv /uv /uvx /bin/
 
-WORKDIR /app
-ENV PYTHONPATH=/app \
+WORKDIR /app/src
+ENV PYTHONPATH=/app/src \
     # Do no write bytecode for the application while running it as we will never restart the process within the container
     PYTHONDONTWRITEBYTECODE=1 \
     # As we run in a container, uv should use the system python instead of creating a new .venv.
@@ -31,9 +31,9 @@ FROM base AS production
 COPY pyproject.toml uv.lock /
 RUN uv sync --no-dev --no-editable
 
-COPY src/ /app/
+COPY . /app/
 
-CMD ["python", "sync.py"]
+CMD ["python", "/app/src/sync.py"]
 
 # Target used for local development
 FROM production AS development
