@@ -1,6 +1,9 @@
+#!/bin/env python
+
 import json
 import signal
 import sys
+from argparse import ArgumentParser
 from datetime import datetime
 from socket import gaierror
 from time import sleep, time
@@ -18,9 +21,9 @@ from sqlalchemy.exc import NoSuchTableError, OperationalError
 env = environ.Env(
     DEBUG=(bool, False),
     LOG_LEVEL=(str, None),
-    RABBITMQ_HOST=(str, "localhost"),
-    RABBITMQ_PORT=(int, 5672),
-    RABBITMQ_QUEUE_NAME=(str, ""),
+    BROKER_HOST=(str, "localhost"),
+    BROKER_PORT=(int, 5672),
+    BROKER_QUEUE_NAME=(str, ""),
     DATABASE_URL=(str, ""),
     SYNC_TABLES=(list, []),
     SYNC_INTERVAL_MINUTES=(int, 30),
@@ -31,9 +34,9 @@ if not env("SYNC_TABLES"):
         "SYNC_TABLES was not defined. You need to at least specify one table to synchronize."
     )
 
-if not env("RABBITMQ_QUEUE_NAME"):
+if not env("BROKER_QUEUE_NAME"):
     raise RuntimeError(
-        "RABBITMQ_QUEUE_NAME was not defined. You need to specify a queue to push the data into."
+        "BROKER_QUEUE_NAME was not defined. You need to specify a queue to push the data into."
     )
 
 if not env("DATABASE_URL"):
@@ -112,7 +115,7 @@ class DatabaseConnector:
                 f"Could not connect to the database: {error}", error=error
             ) from error
 
-        with engine.connect() as connection, RabbitMQConnector() as connector:
+        with engine.connect() as connection, BrokerConnector() as connector:
             for table_name in self._tables:
                 if STOP_EXECUTION:
                     logger.info("Interrupt detected. Skipping remaining tables.")
@@ -166,11 +169,11 @@ class DatabaseConnector:
                 logger.debug("{table}: Published table", table=table_name)
 
 
-class RabbitMQConnector:
+class BrokerConnector:
     def __init__(self):
-        self._host = env("RABBITMQ_HOST")
-        self._port = env("RABBITMQ_PORT")
-        self._queue_name = env("RABBITMQ_QUEUE_NAME")
+        self._host = env("BROKER_HOST")
+        self._port = env("BROKER_PORT")
+        self._queue_name = env("BROKER_QUEUE_NAME")
 
         self._connection: BlockingConnection | None = None
         self._channel: BlockingChannel | None = None
@@ -178,7 +181,7 @@ class RabbitMQConnector:
     def connection(self) -> BlockingConnection:
         if not self._connection:
             raise RuntimeError(
-                "Need to first connect to RabbitMQ prior to accessing the connection"
+                "Need to first connect to Broker prior to accessing the connection"
             ) from None
 
         return self._connection
@@ -201,7 +204,7 @@ class RabbitMQConnector:
             )
         except gaierror as error:
             raise RoadsError(
-                f"Could not connect to RabbitMQ {self._host}:{self._port}: {error}",
+                f"Could not connect to Broker {self._host}:{self._port}: {error}",
                 error=error,
             ) from error
 
@@ -221,7 +224,7 @@ class RabbitMQConnector:
         self._connection = None
 
 
-def main():
+def main(background: bool = False):
     database_connector = DatabaseConnector()
 
     while not STOP_EXECUTION:
@@ -239,6 +242,14 @@ def main():
             break
 
         time_taken = time() - start_time
+
+        if not background:
+            logger.info(
+                "Synced in {time}s.",
+                time=round(time_taken, 4),
+            )
+            logger.info("Only run once, exiting.")
+            break
 
         # Reduce the sleeping time by the time it took to sync the tables
         # to reduce drift.
@@ -270,4 +281,16 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = ArgumentParser(
+        prog="RoadsSynchronizer",
+        description="Pushes tables' data and schema of a database to a Broker message broker",
+    )
+    parser.add_argument(
+        "--background",
+        help="Run continuously as a background process",
+        action="store_true",
+    )
+
+    args = parser.parse_args()
+
+    main(background=args.background)

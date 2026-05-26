@@ -42,7 +42,7 @@ RUN uv sync --locked --no-dev --no-editable
 
 COPY . /app/
 
-CMD ["python", "/app/src/sync.py"]
+CMD ["/app/src/main.py"]
 
 # Target used for local development
 FROM production AS development
