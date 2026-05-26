@@ -16,8 +16,6 @@ ENV PYTHONPATH=/app/src \
     # As we run in a container, uv should use the system python instead of creating a new .venv.
     UV_PYTHON_PREFERENCE=system \
     UV_PROJECT_ENVIRONMENT=/usr/local \
-    # Make sure that the lock file is not changed while installing/syncing dependencies
-    UV_LOCKED=1 \
     # Compile bytecode to speed up imports and application startup time
     UV_COMPILE_BYTECODE=1
 
@@ -29,7 +27,7 @@ RUN apt update && apt install -y --no-install-recommends \
 FROM base AS production
 
 COPY pyproject.toml uv.lock /
-RUN uv sync --no-dev --no-editable
+RUN uv sync --locked --no-dev --no-editable
 
 COPY . /app/
 
@@ -37,5 +35,4 @@ CMD ["python", "/app/src/sync.py"]
 
 # Target used for local development
 FROM production AS development
-RUN uv sync --no-editable
-ENV UV_LOCKED=0
+RUN uv sync --locked --no-editable
