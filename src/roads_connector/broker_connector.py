@@ -53,14 +53,19 @@ class BrokerConnector:
         )
 
     def __enter__(self) -> Self:
-        credentials: PlainCredentials | None = None
+        connection_params = {
+            "host": self._host,
+            "port": self._port,
+        }
 
         if all([self._username, self._password]):
             logger.debug(
                 "Broker: Using username '{username}' to connect",
                 username=self._username,
             )
-            credentials = PlainCredentials(self._username, self._password)
+            connection_params["credentials"] = PlainCredentials(
+                self._username, self._password
+            )
         else:
             logger.debug(
                 "Broker: Username and/or password not specified, using anonymous connection"
@@ -68,9 +73,7 @@ class BrokerConnector:
 
         try:
             self._connection = BlockingConnection(
-                ConnectionParameters(
-                    host=self._host, port=self._port, credentials=credentials
-                )
+                ConnectionParameters(**connection_params)
             )
         except gaierror as error:
             raise RoadsError(
