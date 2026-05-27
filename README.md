@@ -9,6 +9,11 @@ The following databases are supported:
 
 Others might work as well.
 
+Release packages including a Helm chart can be found at https://github.com/benz-walter/tenant-luebeck-roads-connector.  
+The image can be found at `ghcr.io/benz-walter/tenant-luebeck-roads-connector/roads-connector`.
+
+The repository adheres to [semantic versioning](https://semver.org).
+
 ## Configuration
 
 The application is configured mostly using environment variables:
