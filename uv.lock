@@ -205,6 +205,12 @@ wheels = [
 ]
 
 [[package]]
+name = "python3-pika"
+version = "0.9.14"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1a/0f/70233fa4ce5df4b6451a94043bfdb6a8e524a85b53a0c861fc8e46cb6115/python3-pika-0.9.14.tar.gz", hash = "sha256:073267c932671cfbcc62d772eba511e77bae80e32a22a424dd9300bbb98b70b0", size = 68752, upload-time = "2014-09-23T13:13:00.4Z" }
+
+[[package]]
 name = "roads-connector"
 version = "0.1.0"
 source = { virtual = "." }
@@ -215,6 +221,7 @@ dependencies = [
     { name = "pika" },
     { name = "psycopg2-binary" },
     { name = "pyodbc" },
+    { name = "python3-pika" },
     { name = "sqlalchemy" },
 ]
 
@@ -231,6 +238,7 @@ requires-dist = [
     { name = "pika" },
     { name = "psycopg2-binary" },
     { name = "pyodbc", specifier = ">=5.3.0" },
+    { name = "python3-pika", specifier = ">=0.9.14" },
     { name = "sqlalchemy" },
 ]
 
