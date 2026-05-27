@@ -65,6 +65,34 @@ docker build --target production -t <tag>
 docker run --rm -e DATABASE_URL=... <tag> /app/src/main.py
 ```
 
+## Schema
+
+For each table configured, a JSON message including schema and data is published to the broker, e.g.:
+
+```json
+{
+  "schema": {
+    "table": "myTableName",
+    "columns": {
+      "id": "integer",
+      "geolocation": "geometry(geometry,-1)",
+      "name": "varchar(255) collate \"sql_latin1_general_cp1_ci_as\"",
+      "created_at": "date",
+      "optional": "integer"
+    }
+  },
+  "data": [
+    {
+      "id": 1,
+      "geolocation": "010220e833...c55641",
+      "name": "Some hidden treasure",
+      "created_at": "2026-05-27",
+      "optional": null
+    }
+  ]
+}
+```
+
 ## Development
 
 The repository contains a docker-compose file to set up a local development environment.
