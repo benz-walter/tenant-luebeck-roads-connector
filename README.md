@@ -1,6 +1,6 @@
-# Roads Synchronizer
+# Roads Connector
 
-The Roads Synchronizer is a small Python script that accesses a configured database, reads the schema and data of listed tables,
+The Roads Connector is a small Python script that accesses a configured database, reads the schema and data of listed tables,
 and pushes that information converted to JSON to an AMQP message broker, e.g. RabbitMQ, for further processing.
 
 The following databases are supported:
@@ -68,7 +68,7 @@ docker run --rm -e DATABASE_URL=... <tag> /app/src/main.py
 The repository contains a docker-compose file to set up a local development environment.
 It includes the following services:
 
-* `app` - Application / synchronizer
+* `app` - Application
 * `rabbitmq` - Message broker
 * `database` - Database
 

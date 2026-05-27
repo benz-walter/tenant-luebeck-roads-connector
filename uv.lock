@@ -205,7 +205,7 @@ wheels = [
 ]
 
 [[package]]
-name = "roads-synchronizer"
+name = "roads-connector"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

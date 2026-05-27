@@ -282,7 +282,7 @@ def main(background: bool = False):
 
 if __name__ == "__main__":
     parser = ArgumentParser(
-        prog="RoadsSynchronizer",
+        prog="RoadsConnector",
         description="Pushes tables' data and schema of a database to a Broker message broker",
     )
     parser.add_argument(

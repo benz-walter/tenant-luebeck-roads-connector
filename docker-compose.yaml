@@ -1,6 +1,6 @@
 services:
   app:
-    image: roads-synchronizer
+    image: roads-connector
     build:
       context: .
       dockerfile: Dockerfile
