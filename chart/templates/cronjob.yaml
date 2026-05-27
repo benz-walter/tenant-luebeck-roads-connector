@@ -7,7 +7,7 @@ spec:
   startingDeadlineSeconds: {{ .Values.cronjob.startingDeadlineSeconds }}
   successfulJobsHistoryLimit: {{ .Values.cronjob.successfulJobsHistoryLimit }}
   failedJobsHistoryLimit: {{ .Values.cronjob.failedJobsHistoryLimit }}
-  concurrencyPolicy: Forbid
+  concurrencyPolicy: {{ .Values.cronjob.concurrencyPolicy }}
   jobTemplate:
     spec:
       template:

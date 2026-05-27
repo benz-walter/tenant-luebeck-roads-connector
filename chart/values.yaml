@@ -19,6 +19,10 @@ cronjob:
   # Specifies the number of failed finished jobs to keep. Setting this field to 0 will not keep any failed jobs.
   failedJobsHistoryLimit: 1
 
+  # Specifies the policy for allowing concurrent executions of a Job.
+  # Can be 'Allow', 'Forbid' or 'Replace'.
+  concurrencyPolicy: Replace
+
 # Configuration related to the application.
 application:
 

@@ -24,6 +24,10 @@
         },
         "failedJobsHistoryLimit": {
           "type": "integer"
+        },
+        "concurrencyPolicy": {
+          "type": "string",
+          "enum": ["Allow", "Forbid", "Replace"]
         }
       }
     },
