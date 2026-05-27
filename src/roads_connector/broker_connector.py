@@ -2,17 +2,33 @@ import json
 from socket import gaierror
 from typing import Any, Self
 
-from pika import BasicProperties, BlockingConnection, ConnectionParameters
+from loguru import logger
+from pika import (
+    BasicProperties,
+    BlockingConnection,
+    ConnectionParameters,
+    PlainCredentials,
+)
 from pika.adapters.blocking_connection import BlockingChannel
 
 from .exceptions import RoadsError
 
 
 class BrokerConnector:
-    def __init__(self, host: str, port: int, queue_name: str):
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        queue_name: str,
+        username: str | None = None,
+        password: str | None = None,
+    ):
         self._host = host
         self._port = port
         self._queue_name = queue_name
+
+        self._username = username
+        self._password = password
 
         self._connection: BlockingConnection | None = None
         self._channel: BlockingChannel | None = None
@@ -37,9 +53,24 @@ class BrokerConnector:
         )
 
     def __enter__(self) -> Self:
+        credentials: PlainCredentials | None = None
+
+        if all([self._username, self._password]):
+            logger.debug(
+                "Broker: Using username '{username}' to connect",
+                username=self._username,
+            )
+            credentials = PlainCredentials(self._username, self._password)
+        else:
+            logger.debug(
+                "Broker: Username and/or password not specified, using anonymous connection"
+            )
+
         try:
             self._connection = BlockingConnection(
-                ConnectionParameters(host=self._host, port=self._port)
+                ConnectionParameters(
+                    host=self._host, port=self._port, credentials=credentials
+                )
             )
         except gaierror as error:
             raise RoadsError(

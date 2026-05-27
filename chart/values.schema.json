@@ -84,6 +84,12 @@
         "port": {
           "type": "integer"
         },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
         "queueName": {
           "type": "string"
         }

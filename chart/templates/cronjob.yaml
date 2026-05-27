@@ -38,6 +38,11 @@ spec:
                     secretKeyRef:
                       name: roads-connector
                       key: databaseUrl
+                - name: BROKER_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: roads-connector
+                      key: brokerPassword
               {{- with .Values.application.resources }}
               resources:
                 {{- toYaml . | nindent 12 }}

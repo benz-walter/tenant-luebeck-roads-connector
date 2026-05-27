@@ -71,6 +71,12 @@ broker:
   # AMQP port of the broker
   port: 5672
 
+  # Optional username to use to connect.
+  username: ""
+
+  # Optional password to use to connect.
+  password: ""
+
   # Name of the queue to publish messages to.
   queueName: "roads"
 

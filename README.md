@@ -18,16 +18,18 @@ The repository adheres to [semantic versioning](https://semver.org).
 
 The application is configured mostly using environment variables:
 
-| Name                  | Type       | Default       | Comment                                       |
-|-----------------------|------------|---------------|-----------------------------------------------|
-| DEBUG                 | bool       | false         |                                               |
-| LOG_LEVEL             | str        | DEBUG or INFO |                                               |
-| BROKER_HOST           | str        | localhost     |                                               |
-| BROKER_PORT           | int        | 5672          |                                               |
-| BROKER_QUEUE_NAME     | str        |               |                                               |
-| DATABASE_URL          | str        |               |                                               |
-| SYNC_TABLES           | list[str]  |               | Comma seperated string, e.g. "table1, table2" |
-| SYNC_INTERVAL_MINUTES | int        | 30            |                                               |
+| Name                  | Type      | Default       | Comment                                                 |
+|-----------------------|-----------|---------------|---------------------------------------------------------|
+| DEBUG                 | bool      | false         |                                                         |
+| LOG_LEVEL             | str       | DEBUG or INFO |                                                         |
+| BROKER_HOST           | str       | localhost     |                                                         |
+| BROKER_PORT           | int       | 5672          |                                                         |
+| BROKER_USERNAME       | str       |               |                                                         |
+| BROKER_PASSWORD       | str       |               |                                                         |
+| BROKER_QUEUE_NAME     | str       | roads         |                                                         |
+| DATABASE_URL          | str       |               | Required.                                               |
+| SYNC_TABLES           | list[str] |               | Required. Comma seperated string, e.g. "table1, table2" |
+| SYNC_INTERVAL_MINUTES | int       | 30            |                                                         |
 
 
 ## Usage

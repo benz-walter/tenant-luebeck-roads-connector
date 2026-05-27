@@ -9,5 +9,6 @@ data:
   BROKER_HOST: {{ .Values.broker.host | quote }}
   BROKER_PORT: {{ .Values.broker.port | quote }}
   BROKER_QUEUE_NAME: {{ .Values.broker.queueName | quote }}
+  BROKER_USERNAME: {{ .Values.broker.username | quote }}
 
   SYNC_TABLES: {{ .Values.database.tables | join "," | quote }}

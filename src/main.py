@@ -19,7 +19,9 @@ env = environ.Env(
     LOG_LEVEL=(str, None),
     BROKER_HOST=(str, "localhost"),
     BROKER_PORT=(int, 5672),
-    BROKER_QUEUE_NAME=(str, ""),
+    BROKER_USERNAME=(str, ""),
+    BROKER_PASSWORD=(str, ""),
+    BROKER_QUEUE_NAME=(str, "roads"),
     DATABASE_URL=(str, ""),
     SYNC_TABLES=(list, []),
     SYNC_INTERVAL_MINUTES=(int, 30),
@@ -65,6 +67,8 @@ def main(background: bool = False):
         host=env("BROKER_HOST"),
         port=env("BROKER_PORT"),
         queue_name=env("BROKER_QUEUE_NAME"),
+        username=env("BROKER_USERNAME"),
+        password=env("BROKER_PASSWORD"),
     )
     database_connector = DatabaseConnector(
         url=env("DATABASE_URL"), tables=env("SYNC_TABLES"), broker=broker_connector
