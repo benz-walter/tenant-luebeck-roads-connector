@@ -61,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: packaged-helm-chart
-          path: ./dist/*.tgz
+          path: ./chart/dist/*.tgz
           if-no-files-found: error
 
       - name: Release
@@ -69,4 +69,4 @@ jobs:
         if: github.ref_type == 'tag'
         with:
           files: |
-            ./dist/*.tgz
+            ./chart/dist/*.tgz
