@@ -10,4 +10,4 @@ data:
   BROKER_PORT: {{ .Values.broker.port | quote }}
   BROKER_QUEUE_NAME: {{ .Values.broker.queueName | quote }}
 
-  SYNC_TABLES: {{ .Values.syncTables | join "," | quote }}
+  SYNC_TABLES: {{ .Values.database.tables | join "," | quote }}
