@@ -53,7 +53,9 @@ jobs:
       - name: Install chart dependencies
         run: helm dependency build
       - name: Package Helm chart
-        run: helm package --destination ./dist --app-version ${{ github.ref_name }} --version ${{ github.ref_name }} .
+        run: |
+          CHART_VERSION=${{ github.ref_type == 'tag' && github.ref_name || '0.0.0-dev' }}
+          helm package --destination ./dist --app-version ${{ github.ref_name }} --version "$CHART_VERSION" .
 
       - name: Upload packaged chart as artifact
         uses: actions/upload-artifact@v4
