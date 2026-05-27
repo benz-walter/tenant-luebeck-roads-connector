@@ -13,5 +13,6 @@ def handle_signal(sig, frame):
     )
     STOP_EXECUTION = True
 
+
 def is_interrupted():
     return STOP_EXECUTION

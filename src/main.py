@@ -61,8 +61,14 @@ logger.add(
 
 
 def main(background: bool = False):
-    broker_connector = BrokerConnector(host=env("BROKER_HOST"), port=env("BROKER_PORT"), queue_name=env("BROKER_QUEUE_NAME"))
-    database_connector = DatabaseConnector(url=env("DATABASE_URL"), tables=env("SYNC_TABLES"), broker=broker_connector)
+    broker_connector = BrokerConnector(
+        host=env("BROKER_HOST"),
+        port=env("BROKER_PORT"),
+        queue_name=env("BROKER_QUEUE_NAME"),
+    )
+    database_connector = DatabaseConnector(
+        url=env("DATABASE_URL"), tables=env("SYNC_TABLES"), broker=broker_connector
+    )
 
     while not is_interrupted():
         start_time = time()
