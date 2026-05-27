@@ -25,3 +25,6 @@
 # Custom values
 values.custom.yaml
 values.lint.yaml
+
+# Packaging
+dist/
